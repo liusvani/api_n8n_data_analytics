@@ -86,42 +86,51 @@ graph TD
 ```
 ```mermaid
 graph TD
-    %% Definición de Estilos
-    classDef trigger fill:#f96,stroke:#333,stroke-width:2px;
-    classDef process fill:#d1e8ff,stroke:#0056b3,stroke-width:1px;
-    classDef decision fill:#fff4dd,stroke:#d4a017,stroke-width:2px;
-    classDef success fill:#d4edda,stroke:#28a745,stroke-width:2px;
-    classDef error fill:#f8d7da,stroke:#dc3545,stroke-width:2px;
+    %% 1. Definición de Nodos con Formas Profesionales
+    A([Schedule Trigger])
+    B[Get Ordenes]
+    C{Switch}
+    D[Validación de datos]
+    E[Formatear para Gráfico]
+    F[Graficar datos]
+    G{If}
+    H([Envia reporte final])
+    I([Notificar no existen ordenes o fallo en API])
+    J([Enviar reporte de error])
 
-    %% Nodos Principales
-    A([Schedule Trigger]) :::trigger
-    B[Get Ordenes] :::process
-    C{Switch} :::decision
-    
-    subgraph "Procesamiento y Análisis"
-        D[Validación de datos] :::process
-        E[Formatear para Gráfico] :::process
-        F[Graficar datos] :::process
+    %% 2. Organización por Capas (Subgrafos)
+    subgraph "Capa de Procesamiento"
+        D
+        E
+        F
     end
 
-    G{If} :::decision
-    H([Envia reporte final]) :::success
-    I([Notificar no existen ordenes o fallo en API]) :::error
-    J([Enviar reporte de error]) :::error
-
-    %% Relaciones y Flujos
+    %% 3. Conexiones y Lógica de Negocio
     A --> B
     B --> C
     
-    C -->|Datos válidos| D
-    C -->|Error de conexión| J
+    C -->|Datos Válidos| D
+    C -->|Fallo de Conexión| J
     
     D --> E
     E --> F
     F --> G
     
-    G -->|Con éxito| H
-    G -->|Sin datos/Fallo| I
+    G -->|Éxito| H
+    G -->|Sin Datos| I
+
+    %% 4. Estilos (Aplicados al final para evitar errores de parseo)
+    classDef trigger fill:#f96,stroke:#333,stroke-width:2px
+    classDef process fill:#d1e8ff,stroke:#0056b3,stroke-width:1px
+    classDef decision fill:#fff4dd,stroke:#d4a017,stroke-width:2px
+    classDef success fill:#d4edda,stroke:#28a745,stroke-width:2px
+    classDef error fill:#f8d7da,stroke:#dc3545,stroke-width:2px
+
+    class A trigger
+    class B,D,E,F process
+    class C,G decision
+    class H success
+    class I,J error
   ```  
 # API Data Analytics & Reporting Pipeline
 

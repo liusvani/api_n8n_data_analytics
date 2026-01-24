@@ -89,8 +89,8 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.3,
       "position": [
-        32,
-        -192
+        64,
+        -392
       ],
       "id": "942a0114-fd5d-4edc-957e-3c120d07eca7",
       "name": "Switch"
@@ -103,100 +103,166 @@
         "specifyBody": "json",
         "jsonBody": "={\n  \"chart\": {\n    \"type\": \"doughnut\",\n    \"data\": {\n      \"datasets\": [\n        {\n          \"data\": [{{$json.pendingCount}}, {{$json.processingCount}}, {{$json.completedCount}}, {{$json.canceledCount}}],\n          \"backgroundColor\": [\n            \"rgb(99, 102, 241)\",\n            \"rgb(16, 185, 129)\",\n            \"rgb(251, 191, 36)\",\n            \"rgb(239, 68, 68)\"\n          ],\n          \"label\": \"Estados de órdenes\"\n        }\n      ],\n      \"labels\": [\"PENDIENTE\", \"PROCESADO\", \"COMPLETADO\", \"CANCELADO\"]\n    },\n    \"options\": {\n      \"title\": {\n        \"display\": true,\n        \"text\": \"Estado de ventas diarias\"\n      },\n      \"maintainAspectRatio\": false,\n      \"cutoutPercentage\": 60\n    }\n  }\n}\n",
         "options": {
+          "batching": {
+            "batch": {}
+          },
           "response": {
             "response": {
+              "fullResponse": true,
               "responseFormat": "file"
             }
-          }
+          },
+          "timeout": 10000
         }
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.3,
       "position": [
-        480,
-        -352
+        736,
+        -576
       ],
       "id": "156b0630-e57e-4064-8a57-1ac6f855a672",
-      "name": "Graficar datos"
+      "name": "Graficar datos",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
     },
     {
       "parameters": {
-        "sendTo": "liusvanideveloper@gmail.com",
+        "sendTo": "{{EMAIL_DESTINO}}",
         "subject": "Error de conexión con API — Acción requerida",
         "message": "=<!-- Email template para n8n -->\n<div style=\"font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; color:#374151; line-height:1.45; max-width:680px; margin:0 auto; padding:20px;\">\n  \n\n  <div role=\"status\" aria-live=\"polite\" style=\"background:#f8fafc; border:1px solid #e6eef8; padding:14px; border-radius:8px; margin:12px 0;\">\n<p style=\"margin:0 0 12px 0; color:#111827; font-weight:700; font-size:18px;\">\n    Asunto: Error de conexión con API — Acción requerida\n  </p>\n\n  <p style=\"margin:0 0 12px 0;\">\n    Estimado equipo,\n  </p>\n\n  <p style=\"margin:0 0 12px 0;\">\n    El flujo automatizado en <strong>n8n</strong> ha fallado al intentar recuperar datos desde la API. Como resultado, la operación no pudo completarse y los datos no fueron obtenidos.\n  </p>\n    <strong style=\"display:block; margin-bottom:8px; color:#0f172a;\">Detalles técnicos</strong>\n\n    <div style=\"font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, 'Roboto Mono', monospace; font-size:13px; color:#0b1220;\">\n\n      <div style=\"margin-bottom:6px;\">\n        <span style=\"color:#111827;\">Código:</span>\n        <strong>{{ $json.error.code }}</strong>\n      </div>\n\n      <div style=\"margin-bottom:8px;\">\n        <span style=\"color:#111827;\">Mensaje:</span>\n        <span>{{ $json.error.message }} \n      </div>\n\n      <div aria-label=\"Stack trace\" style=\"margin-top:6px;\">\n\n  <p style=\"margin:0 0 8px 0; font-weight:600; color:#111827;\">Workflow:</p>\n  <ul style=\"margin:0 0 16px 20px; padding:0; color:#374151;\">\n    <li><strong>ID:</strong> <span style=\"font-family:ui-monospace, monospace;\">{{ $workflow.id }}</span></li>\n<li><strong>Nombre:</strong> <span style=\"font-family:ui-monospace, monospace;\">{{ $workflow.name }}</span></li>\n    <li><strong>Entorno:</strong> {{ $execution.mode.toUpperCase() }}</li>\n    <li><strong>Hora detectada:</strong> {{ $now }}</li>\n  </ul>\n\n  <p style=\"margin-top:18px; color:#6b7280; font-size:13px;\">\n    Este mensaje fue generado automáticamente por el sistema de automatización. No responda a este correo.\n  </p>\n</div>\n",
         "options": {
-          "appendAttribution": false
+          "appendAttribution": false,
+          "senderName": "Sistema Automatizado"
         }
       },
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
       "position": [
-        256,
-        32
+        288,
+        -216
       ],
       "id": "b5273300-3b1f-4051-873b-2c169c26774d",
       "name": "Enviar reporte de error",
       "webhookId": "ec830b58-9091-4929-88d5-47a7f0654bab",
       "credentials": {
-        "gmailOAuth2": {
-          "id": "lLmmN5E0NilMWhrG",
-          "name": "Gmail account"
-        }
+        "gmailOAuth2": "{{CREDENCIAL_GMAIL}}"
       }
     },
     {
       "parameters": {
-        "jsCode": "// Obtener el array \"body\" de la primera entrada\nconst ordenes = $input.first().json.body;\n\n// Contador de PENDING, PROCESSING, COMPLETED, CANCELLED\nlet pendingCount = 0;\nlet processingCount = 0;\nlet completedCount = 0;\nlet canceledCount = 0;\n\nlet totalAmount = 0;\nlet totalClients = 0;\n\n\n// Frecuencia de foodName\nconst foodFrequency = {};\n\nfor (const order of ordenes) {\n\n  totalClients++;\n  \n  totalAmount = totalAmount + order.totalAmount;\n  \n  if (order.status === \"PENDING\") {\n    pendingCount++;\n  }\n\n  if (order.status === \"PROCESSING\") {\n    processingCount++;\n  }\n\n  if (order.status === \"COMPLETED\") {\n    completedCount++;\n  }\n\n  if (order.status === \"CANCELLED\") {\n    canceledCount++;\n  }\n  \n\n  for (const item of order.orderItems) {\n    const food = item.foodName;\n    foodFrequency[food] = (foodFrequency[food] || 0) + 1;\n  }\n}\n\n// Determinar el foodName más repetido\nlet mostRepeatedFood = null;\nlet maxCount = 0;\nfor (const [food, count] of Object.entries(foodFrequency)) {\n  if (count > maxCount) {\n    maxCount = count;\n    mostRepeatedFood = food;\n  }\n}\n\n// Devolver la misma información más los cálculos\nreturn [\n  {\n    json: {\n      //ordenes,          // el array original\n      pendingCount,     // cantidad de pendientes\n      processingCount,     // cantidad de procesados\n      completedCount,     // cantidad de completados\n      canceledCount,     // cantidad de cancelados\n      mostRepeatedFood,  // el foodName más repetido\n      totalClients,  // el total de clientes atendidos\n      totalAmount  // el total de ventas\n    }\n  }\n];"
+        "jsCode": "// 1. Obtener todas las órdenes del body\nconst items = $input.first().json.body;\nconst validatedOrders = [];\nconst allErrors = [];\n\n// Función genérica de validación\nfunction validateField(field, type = \"string\") {\n  if (field === undefined || field === null) return false;\n  if (type === \"string\") return typeof field === \"string\" && field.trim().length > 0;\n  if (type === \"number\") return typeof field === \"number\" && !isNaN(field);\n  if (type === \"integer\") return Number.isInteger(field);\n  if (type === \"array\") return Array.isArray(field) && field.length > 0;\n  return true;\n}\n\n// 2. Procesar cada orden del array\nfor (const order of items) {\n  const errors = [];\n\n  if (!validateField(order.customerName, \"string\")) errors.push(`Nombre inválido en ID ${order.id}`);\n  if (!validateField(order.phoneNumber, \"string\")) errors.push(`Teléfono inválido en ID ${order.id}`);\n  if (!validateField(order.id, \"integer\") || order.id <= 0) errors.push(`ID inválido: ${order.id}`);\n  \n  // Validación de items dentro de la orden\n  if (!validateField(order.orderItems, \"array\")) {\n    errors.push(`Orden ${order.id} no tiene items`);\n  } else {\n    order.orderItems.forEach((item, index) => {\n      if (!validateField(item.foodName, \"string\")) errors.push(`Item ${index} sin nombre en ID ${order.id}`);\n      if (!validateField(item.quantity, \"number\") || item.quantity <= 0) errors.push(`Cantidad inválida en ID ${order.id}`);\n    });\n  }\n\n  // 3. Clasificar resultados\n  if (errors.length > 0) {\n    allErrors.push({ orderId: order.id, details: errors });\n  } else {\n    validatedOrders.push(order);\n  }\n}\n\n// 4. Retornar un objeto consolidado\nreturn [{\n  json: {\n    valid: allErrors.length === 0,\n    totalProcessed: items.length,\n    order: validatedOrders, // Esto es lo que usará tu nodo de Gráficos\n    errors: allErrors\n  }\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        256,
-        -352
+        288,
+        -576
       ],
-      "id": "47bc06f1-d392-49e5-81b8-580189d420f1",
-      "name": "Tranformar los datos"
+      "id": "0cdc4323-2b56-4474-9edb-80d3293c8f9e",
+      "name": "Validación de datos"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -384,
+        -360
+      ],
+      "id": "9d4e8cc8-83fc-4d06-9587-91390b6e4c9b",
+      "name": "When clicking ‘Execute workflow’"
     },
     {
       "parameters": {
-        "sendTo": "liusvanideveloper@gmail.com",
-        "subject": "Llamada a API sin datos — Acción requerida",
-        "message": "=<div style=\"font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; color:#374151; line-height:1.5; max-width:680px; margin:0 auto; padding:20px;\">\n  \n  <!-- Preheader -->\n  <span style=\"display:none; color:#fff; font-size:0;\">Notificación: API sin datos en la base de datos</span>\n\n  <!-- Header -->\n  <div role=\"alert\" style=\"background:#fff7ed; border:1px solid #fdba74; padding:16px; border-radius:8px; margin-bottom:16px;\">\n    <p style=\"margin:0; font-size:18px; font-weight:700; color:#b45309;\">\n      ⚠️ Notificación de flujo — API sin datos\n    </p>\n  </div>\n\n  <!-- Body -->\n  <p style=\"margin:0 0 12px 0;\">\n    El flujo automatizado en <strong>n8n</strong> ejecutó una llamada a la API correctamente, pero la respuesta no contiene registros en la base de datos.\n  </p>\n  <p style=\"margin:0 0 12px 0; color:#374151;\">\n    <em>Acción sugerida:</em> Verifique la API o la base de datos para confirmar que los datos estén disponibles.\n  </p>\n\n  <!-- Technical details -->\n  <p style=\"margin:0 0 8px 0; font-weight:600; color:#111827;\">Detalles técnicos:</p>\n  <ul style=\"margin:0 0 16px 20px; padding:0; color:#374151;\">\n    <li><strong>ID Workflow:</strong> <span style=\"font-family:ui-monospace;\">{{ $workflow.id }}</span></li>\n    <li><strong>Nombre:</strong> <span style=\"font-family:ui-monospace;\">{{ $workflow.name }}</span></li>\n    <li><strong>Entorno:</strong> {{ $execution.mode.toUpperCase() }}</li>\n    <li><strong>Hora detectada:</strong> {{ $now }}</li>\n    <li><strong>Endpoint:</strong> {{ $json.api.endpoint }}</li>\n    <li><strong>Status:</strong> {{ $json.api.statusCode }}</li>\n  </ul>\n\n  <!-- Footer -->\n  <p style=\"margin-top:18px; color:#6b7280; font-size:13px;\">\n    Este mensaje fue generado automáticamente por el sistema de automatización. No responda a este correo.\n  </p>\n</div>\n",
+        "sendTo": "{{EMAIL_DESTINO}}",
+        "subject": "Imagen generada del análisis de datos",
+        "message": "=<div style=\"font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f3f4f6; padding: 24px;\">\n  <div style=\"max-width: 650px; margin: 0 auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);\">\n    \n    <div style=\"background-color: #2563eb; padding: 20px 24px; display: flex; justify-content: space-between; align-items: center;\">\n      <div>\n        <h2 style=\"margin: 0; color: #ffffff; font-size: 20px; font-weight: 600;\">\n          Reporte Diario de Ventas\n        </h2>\n        <p style=\"margin: 4px 0 0 0; color: #bfdbfe; font-size: 13px; font-weight: 400;\">\n          Correspondiente al: {{ $now.toFormat('dd/MM/yyyy HH:mm:ss') }}\n\n        </p>\n      </div>\n    </div>\n\n    <div style=\"padding: 24px;\">\n      <p style=\"font-size: 14px; color: #4b5563; margin-bottom: 20px;\">\n        Resumen ejecutivo de actividad comercial. Datos procesados desde el sistema central de órdenes.\n      </p>\n\n      <table style=\"width: 100%; border-collapse: collapse; font-size: 14px;\">\n        <thead>\n          <tr>\n            <th style=\"text-align: left; padding: 12px; border-bottom: 2px solid #e5e7eb; background-color: #f8fafc; color: #1f2937; font-weight: 600;\">Métrica</th>\n            <th style=\"text-align: right; padding: 12px; border-bottom: 2px solid #e5e7eb; background-color: #f8fafc; color: #1f2937; font-weight: 600;\">Valor</th>\n          </tr>\n        </thead>\n        <tbody>\n          <tr>\n            <td style=\"padding: 10px 12px; border-bottom: 1px solid #f3f4f6;\">Órdenes pendientes</td>\n            <td style=\"padding: 10px 12px; border-bottom: 1px solid #f3f4f6; text-align: right;\"><strong> {{ $('Formatear para Gráfico').item.json.pendingCount }}</strong></td>\n          </tr>\n          <tr>\n            <td style=\"padding: 10px 12px; border-bottom: 1px solid #f3f4f6;\">Órdenes procesadas</td>\n            <td style=\"padding: 10px 12px; border-bottom: 1px solid #f3f4f6; text-align: right;\"><strong>{{ $('Formatear para Gráfico').item.json.processingCount }} </strong></td>\n          </tr>\n          <tr>\n            <td style=\"padding: 10px 12px; border-bottom: 1px solid #f3f4f6;\">Órdenes completadas</td>\n            <td style=\"padding: 10px 12px; border-bottom: 1px solid #f3f4f6; text-align: right; color: #059669;\"><strong>{{ $('Formatear para Gráfico').item.json.completedCount }} </strong></td>\n          </tr>\n          <tr>\n            <td style=\"padding: 10px 12px; border-bottom: 2px solid #e5e7eb;\">Órdenes canceladas</td>\n            <td style=\"padding: 10px 12px; border-bottom: 2px solid #e5e7eb; text-align: right; color: #dc2626;\"><strong>{{ $('Formatear para Gráfico').item.json.canceledCount }} </strong></td>\n          </tr>\n          <tr style=\"background-color: #f9fafb;\">\n            <td style=\"padding: 12px; font-weight: 700;\">Monto total de ventas</td>\n            <td style=\"padding: 12px; text-align: right; font-weight: 700; color: #2563eb; font-size: 16px;\">\n              {{ $('Formatear para Gráfico').item.json.totalAmount }} \n            </td>\n          </tr>\n        </tbody>\n      </table>\n    </div>\n\n    <div style=\"background-color: #f9fafb; padding: 16px; text-align: center; font-size: 11px; color: #9ca3af; border-top: 1px solid #f3f4f6;\">\n      Este mensaje fue generado automáticamente por el sistema de automatización. No responda a este correo.\n    </div>\n  </div>\n</div>",
         "options": {
-          "appendAttribution": false
+          "appendAttribution": false,
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              {}
+            ]
+          },
+          "senderName": "Sistema Automatizado"
         }
       },
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
       "position": [
-        256,
-        -160
+        1184,
+        -624
       ],
-      "id": "7e8e543b-6cb2-4c43-8fc8-1fb55ad6f9c5",
-      "name": "Notificar no existen datos",
-      "webhookId": "ec830b58-9091-4929-88d5-47a7f0654bab",
+      "id": "615fd9cb-b171-4d8e-b4dc-fcf72c8636c5",
+      "name": "Envia reporte final",
+      "webhookId": "83b3162f-49b1-4f7d-9ca2-a02e60d6b1d4",
       "credentials": {
-        "gmailOAuth2": {
-          "id": "lLmmN5E0NilMWhrG",
-          "name": "Gmail account"
-        }
+        "gmailOAuth2": "{{CREDENCIAL_GMAIL}}"
       }
     },
     {
       "parameters": {
-        "url": "http://host.docker.internal:8484/orders",
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c93755b9-1d05-4b08-9e68-1f17a7443d4f",
+              "leftValue": "={{ $json.statusCode }}",
+              "rightValue": 200,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "19ef5fe8-3958-45b3-ab26-7dda8dc69111",
+              "leftValue": "={{ $binary.data.fileName.length }}",
+              "rightValue": "",
+              "operator": {
+                "type": "number",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "ignoreCase": true
+        }
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        960,
+        -576
+      ],
+      "id": "493d17ed-ddbe-4a87-9597-1cadfd3130a2",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "url": "{{API_ENDPOINT_ORDERS}}",
         "options": {
           "fullResponse": true,
           "timeout": 30000
         }
       },
       "id": "2af9a881-bb87-4e84-8963-e182573d2ca1",
-      "name": "Fetch Orders",
+      "name": "Get Ordenes",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 1,
       "position": [
-        -192,
-        -160
+        -160,
+        -360
       ],
       "alwaysOutputData": false,
       "retryOnFail": true,
@@ -205,54 +271,39 @@
     },
     {
       "parameters": {
-        "sendTo": "liusvanideveloper@gmail.com",
-        "subject": "Imagen generada del análisis de datos",
-        "message": "=<div style=\"font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f3f4f6; padding: 24px;\">\n  <div style=\"max-width: 650px; margin: 0 auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);\">\n    \n    <div style=\"background-color: #2563eb; padding: 20px 24px; display: flex; justify-content: space-between; align-items: center;\">\n      <div>\n        <h2 style=\"margin: 0; color: #ffffff; font-size: 20px; font-weight: 600;\">\n          Reporte Diario de Ventas\n        </h2>\n        <p style=\"margin: 4px 0 0 0; color: #bfdbfe; font-size: 13px; font-weight: 400;\">\n          Correspondiente al: {{ $now.toFormat('dd/MM/yyyy HH:mm:ss') }}\n\n        </p>\n      </div>\n    </div>\n\n    <div style=\"padding: 24px;\">\n      <p style=\"font-size: 14px; color: #4b5563; margin-bottom: 20px;\">\n        Resumen ejecutivo de actividad comercial. Datos procesados desde el sistema central de órdenes.\n      </p>\n\n      <table style=\"width: 100%; border-collapse: collapse; font-size: 14px;\">\n        <thead>\n          <tr>\n            <th style=\"text-align: left; padding: 12px; border-bottom: 2px solid #e5e7eb; background-color: #f8fafc; color: #1f2937; font-weight: 600;\">Métrica</th>\n            <th style=\"text-align: right; padding: 12px; border-bottom: 2px solid #e5e7eb; background-color: #f8fafc; color: #1f2937; font-weight: 600;\">Valor</th>\n          </tr>\n        </thead>\n        <tbody>\n          <tr>\n            <td style=\"padding: 10px 12px; border-bottom: 1px solid #f3f4f6;\">Órdenes pendientes</td>\n            <td style=\"padding: 10px 12px; border-bottom: 1px solid #f3f4f6; text-align: right;\"><strong>{{ $json.pendingCount }}</strong></td>\n          </tr>\n          <tr>\n            <td style=\"padding: 10px 12px; border-bottom: 1px solid #f3f4f6;\">Órdenes procesadas</td>\n            <td style=\"padding: 10px 12px; border-bottom: 1px solid #f3f4f6; text-align: right;\"><strong>{{ $json.processingCount }}</strong></td>\n          </tr>\n          <tr>\n            <td style=\"padding: 10px 12px; border-bottom: 1px solid #f3f4f6;\">Órdenes completadas</td>\n            <td style=\"padding: 10px 12px; border-bottom: 1px solid #f3f4f6; text-align: right; color: #059669;\"><strong>{{ $json.completedCount }}</strong></td>\n          </tr>\n          <tr>\n            <td style=\"padding: 10px 12px; border-bottom: 2px solid #e5e7eb;\">Órdenes canceladas</td>\n            <td style=\"padding: 10px 12px; border-bottom: 2px solid #e5e7eb; text-align: right; color: #dc2626;\"><strong>{{ $json.canceledCount }}</strong></td>\n          </tr>\n          <tr style=\"background-color: #f9fafb;\">\n            <td style=\"padding: 12px; font-weight: 700;\">Monto total de ventas</td>\n            <td style=\"padding: 12px; text-align: right; font-weight: 700; color: #2563eb; font-size: 16px;\">\n               ${{ $json.totalAmount.toLocaleString() }}\n            </td>\n          </tr>\n        </tbody>\n      </table>\n    </div>\n\n    <div style=\"background-color: #f9fafb; padding: 16px; text-align: center; font-size: 11px; color: #9ca3af; border-top: 1px solid #f3f4f6;\">\n      Este mensaje fue generado automáticamente por el sistema de automatización. No responda a este correo.\n    </div>\n  </div>\n</div>",
+        "sendTo": "{{EMAIL_DESTINO}}",
+        "subject": "={{ ($json.statusCode==200 && $json.body.length < 1) ? \"Llamada a API Get Ordenes sin datos\" : \"Llamada a API Graficar datos sin conexión\" }}\n",
+        "message": "=<div style=\"font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; color:#374151; line-height:1.5; max-width:680px; margin:0 auto; padding:20px;\">\n  \n  <!-- Preheader -->\n  <span style=\"display:none; color:#fff; font-size:0;\">Notificación: API sin datos en la base de datos</span>\n\n  <!-- Header -->\n  <div role=\"alert\" style=\"background:#fff7ed; border:1px solid #fdba74; padding:16px; border-radius:8px; margin-bottom:16px;\">\n    <p style=\"margin:0; font-size:18px; font-weight:700; color:#b45309;\">\n      ⚠️ Notificación de flujo — API sin datos\n    </p>\n  </div>\n\n  <!-- Body -->\n  <p style=\"margin:0 0 12px 0;\">\n    El flujo automatizado en <strong>n8n</strong> ejecutó una llamada a la API correctamente, pero la respuesta no contiene registros en la base de datos.\n  </p>\n  <p style=\"margin:0 0 12px 0; color:#374151;\">\n    <em>Acción sugerida:</em> Verifique la API o la base de datos para confirmar que los datos estén disponibles.\n  </p>\n\n  <!-- Technical details -->\n  <p style=\"margin:0 0 8px 0; font-weight:600; color:#111827;\">Detalles técnicos:</p>\n  <ul style=\"margin:0 0 16px 20px; padding:0; color:#374151;\">\n    <li><strong>ID Workflow:</strong> <span style=\"font-family:ui-monospace;\">{{ $workflow.id }}</span></li>\n    <li><strong>Nombre:</strong> <span style=\"font-family:ui-monospace;\">{{ $workflow.name }}</span></li>\n    <li><strong>Entorno:</strong> {{ $execution.mode.toUpperCase() }}</li>\n    <li><strong>Hora detectada:</strong> {{ $now }}</li>\n\n    <li><strong>Endpoint:</strong> {{ ($json.statusCode==200 && $json.body.length < 1) ? \"Get Ordenes\" : \"Graficar datos\" }}</li>\n\n  </ul>\n\n  <!-- Footer -->\n  <p style=\"margin-top:18px; color:#6b7280; font-size:13px;\">\n    Este mensaje fue generado automáticamente por el sistema de automatización. No responda a este correo.\n  </p>\n</div>\n",
         "options": {
           "appendAttribution": false,
-          "attachmentsUi": {
-            "attachmentsBinary": [
-              {}
-            ]
-          },
-          "senderName": "El mas locol"
+          "senderName": "Sistema Automatizado"
         }
       },
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
       "position": [
-        704,
-        -352
+        1184,
+        -408
       ],
-      "id": "615fd9cb-b171-4d8e-b4dc-fcf72c8636c5",
-      "name": "Send a message",
-      "webhookId": "83b3162f-49b1-4f7d-9ca2-a02e60d6b1d4",
+      "id": "7e8e543b-6cb2-4c43-8fc8-1fb55ad6f9c5",
+      "name": "Notificar no existen ordenes o fallo en API Graficar datos",
+      "webhookId": "ec830b58-9091-4929-88d5-47a7f0654bab",
       "credentials": {
-        "gmailOAuth2": {
-          "id": "lLmmN5E0NilMWhrG",
-          "name": "Gmail account"
-        }
+        "gmailOAuth2": "{{CREDENCIAL_GMAIL}}"
       }
     },
     {
       "parameters": {
-        "rule": {
-          "interval": [
-            {
-              "field": "minutes",
-              "minutesInterval": 1
-            }
-          ]
-        }
+        "jsCode": "// 1. Obtener las órdenes validadas del nodo anterior\nconst ordenes = $json.order || [];\n\n// 2. Inicializar contadores\nlet metrics = {\n  pendingCount: 0,\n  processingCount: 0,\n  completedCount: 0,\n  canceledCount: 0,\n  totalAmount: 0,\n  totalClients: ordenes.length\n};\n\n// 3. Frecuencia de productos\nconst foodFrequency = {};\n\n// 4. Procesar el array\nfor (const order of ordenes) {\n  // Sumar montos de forma segura (asegura que sea número)\n  if(order.status === \"COMPLETED\") {\n  metrics.totalAmount += Number(order.totalAmount || 0);\n    }\n\n  // Contar estados (Normalizamos a mayúsculas por si acaso)\n  const status = (order.status || '').toUpperCase();\n  if (status === \"PENDING\") metrics.pendingCount++;\n  else if (status === \"PROCESSING\") metrics.processingCount++;\n  else if (status === \"COMPLETED\") metrics.completedCount++;\n  else if (status === \"CANCELLED\" || status === \"CANCELED\") metrics.canceledCount++;\n\n  // Analizar ítems\n  if (order.orderItems && Array.isArray(order.orderItems)) {\n    for (const item of order.orderItems) {\n      const food = item.foodName;\n      if (food) {\n        foodFrequency[food] = (foodFrequency[food] || 0) + 1;\n      }\n    }\n  }\n}\n\n// 5. Encontrar el plato más vendido\nlet mostRepeatedFood = \"N/A\";\nlet maxCount = 0;\nfor (const [food, count] of Object.entries(foodFrequency)) {\n  if (count > maxCount) {\n    maxCount = count;\n    mostRepeatedFood = food;\n  }\n}\n\n// 6. Formatear moneda para el reporte\nconst formattedAmount = new Intl.NumberFormat('es-ES', {\n  style: 'currency',\n  currency: 'USD'\n}).format(metrics.totalAmount);\n\n// 7. Retorno final\nreturn [{\n  json: {\n    ...metrics,\n    totalAmount: formattedAmount, // Enviamos el string bonito para el email\n    mostRepeatedFood\n  }\n}];"
       },
-      "type": "n8n-nodes-base.scheduleTrigger",
-      "typeVersion": 1.3,
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
       "position": [
-        -416,
-        -160
+        512,
+        -576
       ],
-      "id": "05cf8701-51ea-44be-8e8d-227832ea4d1d",
-      "name": "Schedule Trigger"
+      "id": "47bc06f1-d392-49e5-81b8-580189d420f1",
+      "name": "Formatear para Gráfico"
     }
   ],
   "pinData": {},
@@ -261,14 +312,14 @@
       "main": [
         [
           {
-            "node": "Tranformar los datos",
+            "node": "Validación de datos",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Notificar no existen datos",
+            "node": "Notificar no existen ordenes o fallo en API Graficar datos",
             "type": "main",
             "index": 0
           }
@@ -287,18 +338,58 @@
         []
       ]
     },
-    "Tranformar los datos": {
+    "Graficar datos": {
       "main": [
         [
           {
-            "node": "Graficar datos",
+            "node": "If",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Fetch Orders": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get Ordenes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validación de datos": {
+      "main": [
+        [
+          {
+            "node": "Formatear para Gráfico",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Envia reporte final",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Notificar no existen ordenes o fallo en API Graficar datos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Ordenes": {
       "main": [
         [
           {
@@ -309,22 +400,11 @@
         ]
       ]
     },
-    "Graficar datos": {
+    "Formatear para Gráfico": {
       "main": [
         [
           {
-            "node": "Send a message",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Schedule Trigger": {
-      "main": [
-        [
-          {
-            "node": "Fetch Orders",
+            "node": "Graficar datos",
             "type": "main",
             "index": 0
           }
@@ -334,13 +414,15 @@
   },
   "active": false,
   "settings": {
-    "executionOrder": "v1"
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
   },
-  "versionId": "0a9c590f-b535-4563-8cd7-38da0e8ee20e",
+  "versionId": "{{VERSION_ID}}",
   "meta": {
     "templateCredsSetupCompleted": true,
-    "instanceId": "c28904283476f2207c69db69f58f0db805c455898fde90907e8051fa0a4dd3c0"
+    "instanceId": "{{INSTANCE_ID}}"
   },
-  "id": "MFnibfHMt1APq1j8",
+  "id": "{{WORKFLOW_ID}}",
   "tags": []
 }

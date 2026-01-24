@@ -84,54 +84,7 @@ graph TD
     G --> I[Notificar no existen ordenes o fallo en API]
     C --> J[Enviar reporte de error]
 ```
-```mermaid
-graph TD
-    %% 1. Definición de Nodos con Formas Profesionales
-    A([Schedule Trigger])
-    B[Get Ordenes]
-    C{Switch}
-    D[Validación de datos]
-    E[Formatear para Gráfico]
-    F[Graficar datos]
-    G{If}
-    H([Envia reporte final])
-    I([Notificar no existen ordenes o fallo en API])
-    J([Enviar reporte de error])
 
-    %% 2. Organización por Capas (Subgrafos)
-    subgraph "Capa de Procesamiento"
-        D
-        E
-        F
-    end
-
-    %% 3. Conexiones y Lógica de Negocio
-    A --> B
-    B --> C
-    
-    C -->|Datos Válidos| D
-    C -->|Fallo de Conexión| J
-    
-    D --> E
-    E --> F
-    F --> G
-    
-    G -->|Éxito| H
-    G -->|Sin Datos| I
-
-    %% 4. Estilos (Aplicados al final para evitar errores de parseo)
-    classDef trigger fill:#f96,stroke:#333,stroke-width:2px
-    classDef process fill:#d1e8ff,stroke:#0056b3,stroke-width:1px
-    classDef decision fill:#fff4dd,stroke:#d4a017,stroke-width:2px
-    classDef success fill:#d4edda,stroke:#28a745,stroke-width:2px
-    classDef error fill:#f8d7da,stroke:#dc3545,stroke-width:2px
-
-    class A trigger
-    class B,D,E,F process
-    class C,G decision
-    class H success
-    class I,J error
-  ```  
 # API Data Analytics & Reporting Pipeline
 
 Pipeline de automatización desarrollado en **n8n** para la **extracción, validación, análisis y generación de reportes estratégicos** basados en datos transaccionales de una API. Esta solución optimiza la toma de decisiones mediante métricas precisas y visualizaciones dinámicas enviadas de forma automatizada.

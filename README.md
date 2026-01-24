@@ -84,6 +84,84 @@ graph TD
     G --> I[Notificar no existen ordenes o fallo en API]
     C --> J[Enviar reporte de error]
 ```
+
+# API Data Analytics & Reporting Pipeline
+
+Pipeline de automatización desarrollado en **n8n** para la **extracción, validación, análisis y generación de reportes estratégicos** basados en datos transaccionales de una API. Esta solución optimiza la toma de decisiones mediante métricas precisas y visualizaciones dinámicas enviadas de forma automatizada.
+
+---
+
+##  Funcionalidades Principales
+
+- **Ingesta de Datos (ETL):** Extracción automatizada de órdenes desde un endpoint configurable (`{{API_ENDPOINT_ORDERS}}`).
+- **Esquema de Validación Robusto:** Garantiza la integridad de la información mediante la verificación de campos críticos (IDs, metadatos de cliente y estructuras de ítems).
+- **Procesamiento de KPIs:**
+  - Segmentación por estados: Pendientes, Procesadas, Completadas y Canceladas.
+  - Consolidación del Volumen Bruto de Ventas (GMV) en USD.
+  - Identificación de productos con mayor rotación (Top Selling Products).
+- **Visualización de Datos:** Generación dinámica de gráficos de tipo *doughnut* mediante la integración con [QuickChart](https://quickchart.io).
+- **Sistema de Notificaciones Inteligentes:**
+  - Envío de informes ejecutivos diarios.
+  - Protocolos de alerta ante errores de conectividad o respuestas nulas de la API.
+
+---
+
+##  Arquitectura del Workflow
+
+El diseño se basa en principios de **modularidad y alta disponibilidad**:
+
+- **Trigger Cronometrado:** Orquestación basada en intervalos definidos para ejecución desatendida.
+- **Capa de Ingesta:** Consumo de servicios RESTful mediante el nodo HTTP Request.
+- **Capa de Lógica:** Validación de esquemas y transformación de datos (Data Wrangling).
+- **Capa de Salida:** Motor de reporting vía SMTP/Gmail (`{{CREDENCIAL_GMAIL}}`).
+
+---
+
+##  Métricas y Analítica
+
+El sistema computa y normaliza los siguientes indicadores clave:
+
+1. **Estado de Operaciones:** Desglose transaccional por estatus.
+2. **Desempeño Financiero:** Cálculo del ingreso total formateado.
+3. **Análisis de Inventario:** Determinación del producto líder en ventas.
+4. **Alcance de Usuario:** Conteo de clientes únicos procesados en el ciclo.
+
+---
+
+##  Requisitos del Entorno
+
+- **n8n Instance:** v1.121.3 o superior.
+- **SMTP Provider:** Credenciales de Gmail autorizadas en n8n.
+- **API Endpoint:** Acceso a la interfaz de datos de origen.
+- **Variables de Entorno:** Configuración previa de los *placeholders* del sistema.
+
+---
+
+##  Configuración de Parámetros (Placeholders)
+
+| Parámetro | Definición Técnica | Ejemplo de Referencia |
+| :--- | :--- | :--- |
+| `{{API_ENDPOINT_ORDERS}}` | URL base del servicio de datos | `https://api.empresa.com/v1/orders` |
+| `{{EMAIL_DESTINO}}` | Destinatario final del reporte ejecutivo | `analytics@empresa.com` |
+| `{{CREDENCIAL_GMAIL}}` | Identificador de credencial encriptada en n8n | `Gmail_Auth_Production` |
+
+---
+
+##  Flujo de la Automatización (Lógica de Control)
+
+```mermaid
+graph TD
+    A[Schedule Trigger] --> B[Extracción de Datos API]
+    B --> C{Evaluación de Respuesta}
+    C -->|Éxito| D[Validación de Esquema]
+    D --> E[Cálculo de Métricas y KPIs]
+    E --> F[Renderizado de Gráficos]
+    F --> G{¿Existen Datos?}
+    G -->|Sí| H[Despacho de Reporte Ejecutivo]
+    G -->|No| I[Notificación de Ausencia de Datos]
+    C -->|Fallo| J[Alerta de Error de Conectividad]
+```
+
 ##  Instalación y despliegue 
 
 1. **Importar el workflow** en tu instancia de n8n.

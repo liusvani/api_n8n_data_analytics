@@ -84,7 +84,45 @@ graph TD
     G --> I[Notificar no existen ordenes o fallo en API]
     C --> J[Enviar reporte de error]
 ```
+```mermaid
+graph TD
+    %% Definición de Estilos
+    classDef trigger fill:#f96,stroke:#333,stroke-width:2px;
+    classDef process fill:#d1e8ff,stroke:#0056b3,stroke-width:1px;
+    classDef decision fill:#fff4dd,stroke:#d4a017,stroke-width:2px;
+    classDef success fill:#d4edda,stroke:#28a745,stroke-width:2px;
+    classDef error fill:#f8d7da,stroke:#dc3545,stroke-width:2px;
 
+    %% Nodos Principales
+    A([Schedule Trigger]) :::trigger
+    B[Get Ordenes] :::process
+    C{Switch} :::decision
+    
+    subgraph "Procesamiento y Análisis"
+        D[Validación de datos] :::process
+        E[Formatear para Gráfico] :::process
+        F[Graficar datos] :::process
+    end
+
+    G{If} :::decision
+    H([Envia reporte final]) :::success
+    I([Notificar no existen ordenes o fallo en API]) :::error
+    J([Enviar reporte de error]) :::error
+
+    %% Relaciones y Flujos
+    A --> B
+    B --> C
+    
+    C -->|Datos válidos| D
+    C -->|Error de conexión| J
+    
+    D --> E
+    E --> F
+    F --> G
+    
+    G -->|Con éxito| H
+    G -->|Sin datos/Fallo| I
+  ```  
 # API Data Analytics & Reporting Pipeline
 
 Pipeline de automatización desarrollado en **n8n** para la **extracción, validación, análisis y generación de reportes estratégicos** basados en datos transaccionales de una API. Esta solución optimiza la toma de decisiones mediante métricas precisas y visualizaciones dinámicas enviadas de forma automatizada.
@@ -146,21 +184,6 @@ El sistema computa y normaliza los siguientes indicadores clave:
 | `{{CREDENCIAL_GMAIL}}` | Identificador de credencial encriptada en n8n | `Gmail_Auth_Production` |
 
 ---
-
-##  Flujo de la Automatización (Lógica de Control)
-
-```mermaid
-graph TD
-    A[Schedule Trigger] --> B[Extracción de Datos API]
-    B --> C{Evaluación de Respuesta}
-    C -->|Éxito| D[Validación de Esquema]
-    D --> E[Cálculo de Métricas y KPIs]
-    E --> F[Renderizado de Gráficos]
-    F --> G{¿Existen Datos?}
-    G -->|Sí| H[Despacho de Reporte Ejecutivo]
-    G -->|No| I[Notificación de Ausencia de Datos]
-    C -->|Fallo| J[Alerta de Error de Conectividad]
-```
 
 ##  Instalación y despliegue 
 

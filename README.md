@@ -32,15 +32,14 @@ Este pipeline está diseñado bajo principios de **modularidad y mantenibilidad*
 - **Notificaciones**: envía reportes y alertas vía Gmail (`{{CREDENCIAL_GMAIL}}`).
 
 ---
+##  Métricas y Analítica
 
-##  Métricas generadas
+El sistema computa y normaliza los siguientes indicadores clave:
 
-El workflow calcula y reporta:
-
-- Número de órdenes pendientes, procesadas, completadas y canceladas.
-- Monto total de ventas (USD).
-- Producto más vendido.
-- Total de clientes procesados.
+1. **Estado de Operaciones:** Desglose transaccional por estatus.
+2. **Desempeño Financiero:** Cálculo del ingreso total formateado.
+3. **Análisis de Inventario:** Determinación del producto líder en ventas.
+4. **Alcance de Usuario:** Conteo de clientes únicos procesados en el ciclo.
 
 Estas métricas permiten un **seguimiento diario del rendimiento comercial**.
 
@@ -97,17 +96,6 @@ graph TD
 - **Sistema de Notificaciones Inteligentes:**
   - Envío de informes ejecutivos diarios.
   - Protocolos de alerta ante errores de conectividad o respuestas nulas de la API.
-
----
-
-##  Métricas y Analítica
-
-El sistema computa y normaliza los siguientes indicadores clave:
-
-1. **Estado de Operaciones:** Desglose transaccional por estatus.
-2. **Desempeño Financiero:** Cálculo del ingreso total formateado.
-3. **Análisis de Inventario:** Determinación del producto líder en ventas.
-4. **Alcance de Usuario:** Conteo de clientes únicos procesados en el ciclo.
 
 ---
 

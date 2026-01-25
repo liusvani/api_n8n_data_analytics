@@ -85,12 +85,6 @@ graph TD
     C --> J[Enviar reporte de error]
 ```
 
-# API Data Analytics & Reporting Pipeline
-
-Pipeline de automatización desarrollado en **n8n** para la **extracción, validación, análisis y generación de reportes estratégicos** basados en datos transaccionales de una API. Esta solución optimiza la toma de decisiones mediante métricas precisas y visualizaciones dinámicas enviadas de forma automatizada.
-
----
-
 ##  Funcionalidades Principales
 
 - **Ingesta de Datos (ETL):** Extracción automatizada de órdenes desde un endpoint configurable (`{{API_ENDPOINT_ORDERS}}`).
@@ -106,17 +100,6 @@ Pipeline de automatización desarrollado en **n8n** para la **extracción, valid
 
 ---
 
-##  Arquitectura del Workflow
-
-El diseño se basa en principios de **modularidad y alta disponibilidad**:
-
-- **Trigger Cronometrado:** Orquestación basada en intervalos definidos para ejecución desatendida.
-- **Capa de Ingesta:** Consumo de servicios RESTful mediante el nodo HTTP Request.
-- **Capa de Lógica:** Validación de esquemas y transformación de datos (Data Wrangling).
-- **Capa de Salida:** Motor de reporting vía SMTP/Gmail (`{{CREDENCIAL_GMAIL}}`).
-
----
-
 ##  Métricas y Analítica
 
 El sistema computa y normaliza los siguientes indicadores clave:
@@ -125,15 +108,6 @@ El sistema computa y normaliza los siguientes indicadores clave:
 2. **Desempeño Financiero:** Cálculo del ingreso total formateado.
 3. **Análisis de Inventario:** Determinación del producto líder en ventas.
 4. **Alcance de Usuario:** Conteo de clientes únicos procesados en el ciclo.
-
----
-
-##  Requisitos del Entorno
-
-- **n8n Instance:** v1.121.3 o superior.
-- **SMTP Provider:** Credenciales de Gmail autorizadas en n8n.
-- **API Endpoint:** Acceso a la interfaz de datos de origen.
-- **Variables de Entorno:** Configuración previa de los *placeholders* del sistema.
 
 ---
 

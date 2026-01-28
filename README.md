@@ -107,7 +107,7 @@ flowchart TD
     %% Flujo de errores
     I --> M[Convert to File]
     M --> N[Send a message]
-
+```
 ##  Funcionalidades Principales
 
 - **Ingesta de Datos (ETL):** Extracción automatizada de órdenes desde un endpoint configurable (`{{API_ENDPOINT_ORDERS}}`).

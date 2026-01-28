@@ -72,20 +72,8 @@ Antes de ejecutar el workflow, reemplaza los siguientes valores:
 ##  Flujo de la automatización
 
 ```mermaid
-graph TD
-    A[Schedule Trigger] --> B[Get Ordenes]
-    B --> C[Switch]
-    C --> D[Validación de datos]
-    D --> E[Formatear para Gráfico]
-    E --> F[Graficar datos]
-    F --> G[If]
-    G --> H[Envia reporte final]
-    G --> I[Notificar no existen ordenes o fallo en API]
-    C --> J[Enviar reporte de error]
-```
-```mermaid
 flowchart TD
-    A[Manual Trigger] --> B[Get Ordenes]
+    A[Schedule Trigger] --> B[Get Ordenes]
     B --> C[Switch]
     
     %% Switch outputs
@@ -105,7 +93,7 @@ flowchart TD
     K -->|Error| E
 
     %% Flujo de errores
-    I --> M[Convert to File]
+    I --> M[Convert to File CSV]
     M --> N[Send a message]
 ```
 ##  Funcionalidades Principales

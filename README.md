@@ -15,7 +15,8 @@ Workflow de **n8n** que implementa un pipeline completo para la **validación, a
 - **Visualización automática**: Genera un gráfico tipo *doughnut* con [QuickChart](https://quickchart.io).
 - **Notificaciones inteligentes**:
   - Reporte diario de ventas con métricas y gráfico.
-  - Alertas de error de conexión con la API.
+  - Alertas de error de conexión con las API: Get_Ordenes y QuickChart.
+  - Generación y envio de fichero CSV con errores de validación.
   - Aviso cuando la API responde sin datos.
 
 ---
@@ -72,29 +73,31 @@ Antes de ejecutar el workflow, reemplaza los siguientes valores:
 ##  Flujo de la automatización
 
 ```mermaid
+
 flowchart TD
-    A[Schedule Trigger] --> B[Get Ordenes]
+    A[Manual Trigger] --> B[Obtener_ordenes]
     B --> C[Switch]
-    
+
     %% Switch outputs
-    C -->|Datos listos| D[Validación de datos]
-    C -->|No existen ordenes| E[Notificar no existen ordenes o fallo en API Graficar datos]
-    C -->|Error de conexión API| F[Enviar reporte de error]
+    C -->|Datos listos| D[Validar_datos]
+    C -->|No existen ordenes| E[Notificar_inexistencia_ordenes_o_fallo_en_api_graficar_datos]
+    C -->|Error de conexión API| F[Enviar_reporte_de_error]
 
     %% Validación de datos
-    D --> G[Datos validados]
-    G -->|true| H[Formatear para Gráfico]
-    G -->|false| I[Captar y transformar errores de validación]
+    D --> G[Estan_validados]
+    G -->|true| H[Formatear_datos_a_grafico]
+    G -->|false| I[Formatear_errores_validacion]
 
     %% Flujo de datos validados
-    H --> J[Graficar datos]
+    H --> J[Generar_grafico]
     J --> K{If}
-    K -->|OK| L[Envia reporte final]
+    K -->|OK| L[Envia_reporte_final]
     K -->|Error| E
 
     %% Flujo de errores
-    I --> M[Convert to File CSV]
-    M --> N[Send a message]
+    I --> M[Convert_to_File CSV]
+    M --> N[Envio_fichero_csv]
+
 ```
 ##  Funcionalidades Principales
 
@@ -110,7 +113,6 @@ flowchart TD
   - Protocolos de alerta ante errores de conectividad o respuestas nulas de la API.
 
 ---
-```
 ##  Configuración de Parámetros (Placeholders)
 
 | Parámetro | Definición Técnica | Ejemplo de Referencia |

@@ -1,5 +1,5 @@
 {
-  "name": "API Data Analytics & Reporting Pipeline",
+  "name": "API Data Analytics & Reporting Pipeline Oficial",
   "nodes": [
     {
       "parameters": {
@@ -89,114 +89,11 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.3,
       "position": [
-        -1680,
-        176
+        64,
+        -640
       ],
-      "id": "72f7ad3b-3646-43ed-89e3-52e37d66bd09",
+      "id": "942a0114-fd5d-4edc-957e-3c120d07eca7",
       "name": "Switch"
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "https://quickchart.io/chart",
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={\n  \"chart\": {\n    \"type\": \"doughnut\",\n    \"data\": {\n      \"datasets\": [\n        {\n          \"data\": [{{$json.pendingCount}}, {{$json.processingCount}}, {{$json.completedCount}}, {{$json.canceledCount}}],\n          \"backgroundColor\": [\n            \"rgb(99, 102, 241)\",\n            \"rgb(16, 185, 129)\",\n            \"rgb(251, 191, 36)\",\n            \"rgb(239, 68, 68)\"\n          ],\n          \"label\": \"Estados de órdenes\"\n        }\n      ],\n      \"labels\": [\"PENDIENTE\", \"PROCESADO\", \"COMPLETADO\", \"CANCELADO\"]\n    },\n    \"options\": {\n      \"title\": {\n        \"display\": true,\n        \"text\": \"Estado de ventas diarias\"\n      },\n      \"maintainAspectRatio\": false,\n      \"cutoutPercentage\": 60\n    }\n  }\n}\n",
-        "options": {
-          "batching": {
-            "batch": {}
-          },
-          "response": {
-            "response": {
-              "fullResponse": true,
-              "responseFormat": "file"
-            }
-          },
-          "timeout": 10000
-        }
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.3,
-      "position": [
-        -1008,
-        -16
-      ],
-      "id": "876e803f-fb07-4789-a32a-fbc34d80e0f3",
-      "name": "Graficar datos",
-      "retryOnFail": true,
-      "waitBetweenTries": 5000,
-      "alwaysOutputData": true,
-      "onError": "continueRegularOutput"
-    },
-    {
-      "parameters": {
-        "sendTo": "{{EMAIL_DESTINO}}",
-        "subject": "Error de conexión con API — Acción requerida",
-        "message": "=<!-- Email template para n8n -->\n<div style=\"font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; color:#374151; line-height:1.45; max-width:680px; margin:0 auto; padding:20px;\">\n  \n\n  <div role=\"status\" aria-live=\"polite\" style=\"background:#f8fafc; border:1px solid #e6eef8; padding:14px; border-radius:8px; margin:12px 0;\">\n<p style=\"margin:0 0 12px 0; color:#111827; font-weight:700; font-size:18px;\">\n    Asunto: Error de conexión con API — Acción requerida\n  </p>\n\n  <p style=\"margin:0 0 12px 0;\">\n    Estimado equipo,\n  </p>\n\n  <p style=\"margin:0 0 12px 0;\">\n    El flujo automatizado en <strong>n8n</strong> ha fallado al intentar recuperar datos desde la API. Como resultado, la operación no pudo completarse y los datos no fueron obtenidos.\n  </p>\n    <strong style=\"display:block; margin-bottom:8px; color:#0f172a;\">Detalles técnicos</strong>\n\n    <div style=\"font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, 'Roboto Mono', monospace; font-size:13px; color:#0b1220;\">\n\n      <div style=\"margin-bottom:6px;\">\n        <span style=\"color:#111827;\">Código:</span>\n        <strong>{{ $json.error.code }}</strong>\n      </div>\n\n      <div style=\"margin-bottom:8px;\">\n        <span style=\"color:#111827;\">Mensaje:</span>\n        <span>{{ $json.error.message }} \n      </div>\n\n      <div aria-label=\"Stack trace\" style=\"margin-top:6px;\">\n\n  <p style=\"margin:0 0 8px 0; font-weight:600; color:#111827;\">Workflow:</p>\n  <ul style=\"margin:0 0 16px 20px; padding:0; color:#374151;\">\n    <li><strong>ID:</strong> <span style=\"font-family:ui-monospace, monospace;\">{{ $workflow.id }}</span></li>\n<li><strong>Nombre:</strong> <span style=\"font-family:ui-monospace, monospace;\">{{ $workflow.name }}</span></li>\n    <li><strong>Entorno:</strong> {{ $execution.mode.toUpperCase() }}</li>\n    <li><strong>Hora detectada:</strong> {{ $now }}</li>\n  </ul>\n\n  <p style=\"margin-top:18px; color:#6b7280; font-size:13px;\">\n    Este mensaje fue generado automáticamente por el sistema de automatización. No responda a este correo.\n  </p>\n</div>\n",
-        "options": {
-          "appendAttribution": false,
-          "senderName": "Sistema Automatizado"
-        }
-      },
-      "type": "n8n-nodes-base.gmail",
-      "typeVersion": 2.1,
-      "position": [
-        -1456,
-        352
-      ],
-      "id": "4cf2f267-d4d6-4800-9875-8c5f44d4447a",
-      "name": "Enviar reporte de error",
-      "webhookId": "ec830b58-9091-4929-88d5-47a7f0654bab",
-      "credentials": {
-        "gmailOAuth2": {
-          "id": null,
-          "name": "{{CREDENCIAL_GMAIL}}"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "jsCode": "// 1. Obtener todas las órdenes del body\nconst items = $input.first().json.body;\nconst validatedOrders = [];\nconst allErrors = [];\n\n// Función genérica de validación\nfunction validateField(field, type = \"string\") {\n  if (field === undefined || field === null) return false;\n  if (type === \"string\") return typeof field === \"string\" && field.trim().length > 0;\n  if (type === \"number\") return typeof field === \"number\" && !isNaN(field);\n  if (type === \"integer\") return Number.isInteger(field);\n  if (type === \"array\") return Array.isArray(field) && field.length > 0;\n  return true;\n}\n\n// 2. Procesar cada orden del array\nfor (const order of items) {\n  const errors = [];\n\n  if (!validateField(order.customerName, \"string\")) errors.push(`Nombre inválido en ID ${order.id}`);\n  if (!validateField(order.phoneNumber, \"string\")) errors.push(`Teléfono inválido en ID ${order.id}`);\n  if (!validateField(order.id, \"integer\") || order.id <= 0) errors.push(`ID inválido: ${order.id}`);\n  \n  // Validación de items dentro de la orden\n  if (!validateField(order.orderItems, \"array\")) {\n    errors.push(`Orden ${order.id} no tiene items`);\n  } else {\n    order.orderItems.forEach((item, index) => {\n      if (!validateField(item.foodName, \"string\")) errors.push(`Item ${index} sin nombre en ID ${order.id}`);\n      if (!validateField(item.quantity, \"number\") || item.quantity <= 0) errors.push(`Cantidad inválida en ID ${order.id}`);\n    });\n  }\n\n  // 3. Clasificar resultados\n  if (errors.length > 0) {\n    allErrors.push({ orderId: order.id, details: errors });\n  } else {\n    validatedOrders.push(order);\n  }\n}\n\n// 4. Retornar un objeto consolidado\nreturn [{\n  json: {\n    valid: allErrors.length === 0,\n    totalProcessed: items.length,\n    order: validatedOrders, // Esto es lo que usará tu nodo de Gráficos\n    errors: allErrors\n  }\n}];"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        -1456,
-        -16
-      ],
-      "id": "8eeaaac8-6214-4b4c-bedf-1bbd6a5d734a",
-      "name": "Validación de datos"
-    },
-    {
-      "parameters": {
-        "sendTo": "{{EMAIL_DESTINO}}",
-        "subject": "Imagen generada del análisis de datos",
-        "message": "=<div style=\"font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f3f4f6; padding: 24px;\">\n  <div style=\"max-width: 650px; margin: 0 auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);\">\n    \n    <div style=\"background-color: #2563eb; padding: 20px 24px; display: flex; justify-content: space-between; align-items: center;\">\n      <div>\n        <h2 style=\"margin: 0; color: #ffffff; font-size: 20px; font-weight: 600;\">\n          Reporte Diario de Ventas\n        </h2>\n        <p style=\"margin: 4px 0 0 0; color: #bfdbfe; font-size: 13px; font-weight: 400;\">\n          Correspondiente al: {{ $now.toFormat('dd/MM/yyyy HH:mm:ss') }}\n\n        </p>\n      </div>\n    </div>\n\n    <div style=\"padding: 24px;\">\n      <p style=\"font-size: 14px; color: #4b5563; margin-bottom: 20px;\">\n        Resumen ejecutivo de actividad comercial. Datos procesados desde el sistema central de órdenes.\n      </p>\n\n      <table style=\"width: 100%; border-collapse: collapse; font-size: 14px;\">\n        <thead>\n          <tr>\n            <th style=\"text-align: left; padding: 12px; border-bottom: 2px solid #e5e7eb; background-color: #f8fafc; color: #1f2937; font-weight: 600;\">Métrica</th>\n            <th style=\"text-align: right; padding: 12px; border-bottom: 2px solid #e5e7eb; background-color: #f8fafc; color: #1f2937; font-weight: 600;\">Valor</th>\n          </tr>\n        </thead>\n        <tbody>\n          <tr>\n            <td style=\"padding: 10px 12px; border-bottom: 1px solid #f3f4f6;\">Órdenes pendientes</td>\n            <td style=\"padding: 10px 12px; border-bottom: 1px solid #f3f4f6; text-align: right;\"><strong> {{ $('Formatear para Gráfico').item.json.pendingCount }}</strong></td>\n          </tr>\n          <tr>\n            <td style=\"padding: 10px 12px; border-bottom: 1px solid #f3f4f6;\">Órdenes procesadas</td>\n            <td style=\"padding: 10px 12px; border-bottom: 1px solid #f3f4f6; text-align: right;\"><strong>{{ $('Formatear para Gráfico').item.json.processingCount }} </strong></td>\n          </tr>\n          <tr>\n            <td style=\"padding: 10px 12px; border-bottom: 1px solid #f3f4f6;\">Órdenes completadas</td>\n            <td style=\"padding: 10px 12px; border-bottom: 1px solid #f3f4f6; text-align: right; color: #059669;\"><strong>{{ $('Formatear para Gráfico').item.json.completedCount }} </strong></td>\n          </tr>\n          <tr>\n            <td style=\"padding: 10px 12px; border-bottom: 2px solid #e5e7eb;\">Órdenes canceladas</td>\n            <td style=\"padding: 10px 12px; border-bottom: 2px solid #e5e7eb; text-align: right; color: #dc2626;\"><strong>{{ $('Formatear para Gráfico').item.json.canceledCount }} </strong></td>\n          </tr>\n          <tr style=\"background-color: #f9fafb;\">\n            <td style=\"padding: 12px; font-weight: 700;\">Monto total de ventas</td>\n            <td style=\"padding: 12px; text-align: right; font-weight: 700; color: #2563eb; font-size: 16px;\">\n              {{ $('Formatear para Gráfico').item.json.totalAmount }} \n            </td>\n          </tr>\n        </tbody>\n      </table>\n    </div>\n\n    <div style=\"background-color: #f9fafb; padding: 16px; text-align: center; font-size: 11px; color: #9ca3af; border-top: 1px solid #f3f4f6;\">\n      Este mensaje fue generado automáticamente por el sistema de automatización. No responda a este correo.\n    </div>\n  </div>\n</div>",
-        "options": {
-          "appendAttribution": false,
-          "attachmentsUi": {
-            "attachmentsBinary": [
-              {}
-            ]
-          },
-          "senderName": "Sistema Automatizado"
-        }
-      },
-      "type": "n8n-nodes-base.gmail",
-      "typeVersion": 2.1,
-      "position": [
-        -560,
-        -64
-      ],
-      "id": "4702a5fa-167f-4323-b6e2-4fa445fe93ca",
-      "name": "Envia reporte final",
-      "webhookId": "83b3162f-49b1-4f7d-9ca2-a02e60d6b1d4",
-      "credentials": {
-        "gmailOAuth2": {
-          "id": null,
-          "name": "{{CREDENCIAL_GMAIL}}"
-        }
-      }
     },
     {
       "parameters": {
@@ -237,10 +134,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -784,
-        -16
+        1200,
+        -896
       ],
-      "id": "c0a5a93a-3a6a-4984-b0c6-52bdfa9a3f8d",
+      "id": "493d17ed-ddbe-4a87-9597-1cadfd3130a2",
       "name": "If"
     },
     {
@@ -251,18 +148,152 @@
           "timeout": 30000
         }
       },
-      "id": "3e11d212-b872-455e-9319-20cb4e000b65",
-      "name": "Get Ordenes",
+      "id": "2af9a881-bb87-4e84-8963-e182573d2ca1",
+      "name": "Obtener_ordenes",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 1,
       "position": [
-        -1904,
-        208
+        -160,
+        -608
       ],
       "alwaysOutputData": false,
       "retryOnFail": true,
       "waitBetweenTries": 5000,
       "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Obtener todas las órdenes del body\nconst items = $input.first().json.body;\nconst validatedOrders = [];\nconst allErrors = [];\n\n// Función genérica de validación\nfunction validateField(field, type = \"string\", minLength = 0) {\n  if (field === undefined || field === null) return false;\n  if (type === \"string\") {\n    return typeof field === \"string\" && field.trim().length >= minLength;\n  }\n  if (type === \"number\") return typeof field === \"number\" && !isNaN(field);\n  if (type === \"integer\") return Number.isInteger(field);\n  if (type === \"array\") return Array.isArray(field) && field.length > 0;\n  return true;\n}\n\n// 2. Procesar cada orden del array\nfor (const order of items) {\n  const errors = [];\n\n  if (!validateField(order.customerName, \"string\", 1)) errors.push(`Nombre inválido en ID ${order.id}`);\n\n  if (!validateField(order.deliveryAddress, \"string\", 1)) errors.push(`Dirección de entrega invalida en ID ${order.id}`);\n  \n  // Validación de teléfono: string y longitud >= 8\n  if (!validateField(order.phoneNumber, \"string\", 8)) errors.push(`Teléfono inválido (mínimo 8 caracteres) en ID ${order.id}`);\n  \n  if (!validateField(order.id, \"integer\") || order.id <= 0) errors.push(`ID inválido: ${order.id}`);\n  \n  // Validación de items dentro de la orden\n  if (!validateField(order.orderItems, \"array\")) {\n    errors.push(`Orden ${order.id} no tiene items`);\n  } else {\n    order.orderItems.forEach((item, index) => {\n      if (!validateField(item.foodName, \"string\", 1)) errors.push(`Item ${index} sin nombre en ID ${order.id}`);\n      if (!validateField(item.quantity, \"number\") || item.quantity <= 0) errors.push(`Cantidad inválida en ID ${order.id}`);\n    });\n  }\n\n  // 3. Clasificar resultados\n  if (errors.length > 0) {\n    allErrors.push({ orderId: order.id, details: errors });\n  } else {\n    validatedOrders.push(order);\n  }\n}\n\n// 4. Retornar un objeto consolidado\nreturn [{\n  json: {\n    valid: allErrors.length === 0,\n    totalProcessed: items.length,\n    order: allErrors.length === 0 ? validatedOrders : null, // Esto permite que no envie datos si existe algun error de validadcion\n    errors: allErrors\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        288,
+        -800
+      ],
+      "id": "0cdc4323-2b56-4474-9edb-80d3293c8f9e",
+      "name": "Validar_datos"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "aa6ac8e9-c437-4c1b-bb34-112a965410ba",
+              "leftValue": "={{ $json.valid }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": "={{ false }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        512,
+        -800
+      ],
+      "id": "1431feb4-0b35-4c9e-b88c-f64066e28598",
+      "name": "Estan_validados"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Obtener las órdenes validadas del nodo anterior\nconst ordenes = $json.order || [];\n\n// 2. Inicializar contadores\nlet metrics = {\n  pendingCount: 0,\n  processingCount: 0,\n  completedCount: 0,\n  canceledCount: 0,\n  totalAmount: 0,\n  totalClients: ordenes.length\n};\n\n// 3. Frecuencia de productos\nconst foodFrequency = {};\n\n// 4. Procesar el array\nfor (const order of ordenes) {\n  // Sumar montos de forma segura (asegura que sea número)\n  if(order.status === \"COMPLETED\") {\n  metrics.totalAmount += Number(order.totalAmount || 0);\n    }\n\n  // Contar estados (Normalizamos a mayúsculas por si acaso)\n  const status = (order.status || '').toUpperCase();\n  if (status === \"PENDING\") metrics.pendingCount++;\n  else if (status === \"PROCESSING\") metrics.processingCount++;\n  else if (status === \"COMPLETED\") metrics.completedCount++;\n  else if (status === \"CANCELLED\" || status === \"CANCELED\") metrics.canceledCount++;\n\n  // Analizar ítems\n  if (order.orderItems && Array.isArray(order.orderItems)) {\n    for (const item of order.orderItems) {\n      const food = item.foodName;\n      if (food) {\n        foodFrequency[food] = (foodFrequency[food] || 0) + 1;\n      }\n    }\n  }\n}\n\n// 5. Encontrar el plato más vendido\nlet mostRepeatedFood = \"N/A\";\nlet maxCount = 0;\nfor (const [food, count] of Object.entries(foodFrequency)) {\n  if (count > maxCount) {\n    maxCount = count;\n    mostRepeatedFood = food;\n  }\n}\n\n// 6. Formatear moneda para el reporte\nconst formattedAmount = new Intl.NumberFormat('es-ES', {\n  style: 'currency',\n  currency: 'USD'\n}).format(metrics.totalAmount);\n\n// 7. Retorno final\nreturn [{\n  json: {\n    ...metrics,\n    totalAmount: formattedAmount, // Enviamos el string bonito para el email\n    mostRepeatedFood\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        768,
+        -896
+      ],
+      "id": "47bc06f1-d392-49e5-81b8-580189d420f1",
+      "name": "Formatear_datos_a_grafico"
+    },
+    {
+      "parameters": {
+        "jsCode": "const errores = $json.errors || [];\nconst totalProcessed = $json.totalProcessed || 0;\n\n// Timestamp limpio: AAAA-MM-DD HH:mm:ss\nconst fechaReporte = new Date().toLocaleString();\n\nif (errores.length === 0) {\n  return [{\n    json: {\n      orderId: \"N/A\",\n      detalles: \"Sin errores detectados\",\n      fecha: fechaReporte,\n      cantidadErrores: 0,\n      totalProcesados: totalProcessed\n    }\n  }];\n}\n\n// Mapeo detallado\nreturn errores.map(error => {\n  // Forzamos el conteo real del array de detalles\n  const numErrores = Array.isArray(error.details) ? error.details.length : 0;\n  \n  return {\n    json: {\n      orderId: error.orderId,\n      // Usamos un separador que no rompa el CSV (punto y coma o pipe)\n      detalles: error.details.map((d, i) => `${i + 1}. ${d}`).join(' | '), \n      fecha: fechaReporte,\n      cantidadErrores: numErrores, // Aquí verás el \"4\" correctamente\n      totalProcesados: totalProcessed\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        768,
+        -704
+      ],
+      "id": "d0129660-17d6-40cf-8d8a-a149e2d7f68c",
+      "name": "Formatear_errores_validacion"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "{{API_ENDPOINT_ORDERS}}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"chart\": {\n    \"type\": \"doughnut\",\n    \"data\": {\n      \"datasets\": [\n        {\n          \"data\": [{{$json.pendingCount}}, {{$json.processingCount}}, {{$json.completedCount}}, {{$json.canceledCount}}],\n          \"backgroundColor\": [\n            \"rgb(99, 102, 241)\",\n            \"rgb(16, 185, 129)\",\n            \"rgb(251, 191, 36)\",\n            \"rgb(239, 68, 68)\"\n          ],\n          \"label\": \"Estados de órdenes\"\n        }\n      ],\n      \"labels\": [\"PENDIENTE\", \"PROCESADO\", \"COMPLETADO\", \"CANCELADO\"]\n    },\n    \"options\": {\n      \"title\": {\n        \"display\": true,\n        \"text\": \"Estado de ventas diarias\"\n      },\n      \"maintainAspectRatio\": false,\n      \"cutoutPercentage\": 60\n    }\n  }\n}\n",
+        "options": {
+          "batching": {
+            "batch": {}
+          },
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "responseFormat": "file"
+            }
+          },
+          "timeout": 10000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        976,
+        -896
+      ],
+      "id": "156b0630-e57e-4064-8a57-1ac6f855a672",
+      "name": "Generar_grafico",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "sendTo": "{{EMAIL_DESTINO}}",
+        "subject": "Reporte de errores",
+        "message": "=<!DOCTYPE html>\n<html lang=\"es\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Reporte de Errores</title>\n  <style>\n    body {\n      font-family: Arial, sans-serif;\n      background-color: #f4f6f8;\n      margin: 0;\n      padding: 0;\n    }\n    .container {\n      max-width: 640px;\n      margin: 20px auto;\n      background: #ffffff;\n      border: 1px solid #d1d5da;\n      border-radius: 6px;\n    }\n    .header {\n      background-color: #002b5c;\n      color: #ffffff;\n      padding: 20px;\n      text-align: center;\n      font-size: 20px;\n      font-weight: bold;\n    }\n    .content {\n      padding: 20px;\n      color: #333333;\n      line-height: 1.6;\n      font-size: 14px;\n    }\n    .highlight {\n      background-color: #f0f4f8;\n      border-left: 4px solid #002b5c;\n      padding: 12px;\n      margin: 20px 0;\n      font-size: 13px;\n    }\n    .footer {\n      background-color: #f9f9f9;\n      color: #666666;\n      font-size: 12px;\n      text-align: center;\n      padding: 15px;\n      border-top: 1px solid #e1e4e8;\n    }\n    a.button {\n      display: inline-block;\n      background-color: #002b5c;\n      color: #ffffff !important;\n      padding: 10px 18px;\n      margin-top: 15px;\n      text-decoration: none;\n      border-radius: 4px;\n      font-weight: bold;\n      font-size: 13px;\n    }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\">Reporte de Errores en fichero csv</div>\n    <div class=\"content\">\n      <p>Estimado equipo,</p>\n      <p>Se ha generado un nuevo <strong>reporte de errores</strong> como parte del proceso de validación automática.</p>\n      <div class=\"highlight\">\n        El fichero <strong>CSV adjunto</strong> contiene el detalle de las incidencias detectadas en las órdenes procesadas con fecha: <strong>{{ $now.format('dd-MM-yyyy') }} </strong> y hora <strong>{{ $now.toFormat('hh:mm:ss a')}}</strong>.<br>\n        Por favor, revise cada registro y aplique las correcciones necesarias.\n      </div>\n      <p>Este informe contribuye a mantener la calidad y la transparencia en nuestras operaciones.</p>\n      <a href=\"#\" class=\"button\">Descargue el archivo adjunto en este correo</a>\n    </div>\n    <div class=\"footer\">\n      Este correo ha sido emitido automáticamente por el sistema de validación.<br>\n      No responda directamente a este mensaje.\n    </div>\n  </div>\n</body>\n</html>\n",
+        "options": {
+          "appendAttribution": false,
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              {}
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1216,
+        -704
+      ],
+      "id": "cf0bd46e-eb6e-4830-90f2-b5100dccbc27",
+      "name": "Envio_fichero_csv",
+      "webhookId": "548f7e59-42b2-4692-9641-775de1760d5f",
+      "credentials": {
+        "gmailOAuth2": "{{CREDENCIAL_GMAIL}}"
+      }
     },
     {
       "parameters": {
@@ -277,31 +308,60 @@
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
       "position": [
-        -560,
-        160
+        1536,
+        -496
       ],
-      "id": "62ec3f32-96e9-4b2d-a791-830dc7a95a12",
-      "name": "Notificar no existen ordenes o fallo en API Graficar datos",
+      "id": "7e8e543b-6cb2-4c43-8fc8-1fb55ad6f9c5",
+      "name": "Notificar_inexistencia_ordenes_o_fallo_en_api_graficar_datos",
       "webhookId": "ec830b58-9091-4929-88d5-47a7f0654bab",
       "credentials": {
-        "gmailOAuth2": {
-          "id": null,
-          "name": "{{CREDENCIAL_GMAIL}}"
-        }
+        "gmailOAuth2": "{{CREDENCIAL_GMAIL}}"
       }
     },
     {
       "parameters": {
-        "jsCode": "// 1. Obtener las órdenes validadas del nodo anterior\nconst ordenes = $json.order || [];\n\n// 2. Inicializar contadores\nlet metrics = {\n  pendingCount: 0,\n  processingCount: 0,\n  completedCount: 0,\n  canceledCount: 0,\n  totalAmount: 0,\n  totalClients: ordenes.length\n};\n\n// 3. Frecuencia de productos\nconst foodFrequency = {};\n\n// 4. Procesar el array\nfor (const order of ordenes) {\n  // Sumar montos de forma segura (asegura que sea número)\n  if(order.status === \"COMPLETED\") {\n  metrics.totalAmount += Number(order.totalAmount || 0);\n    }\n\n  // Contar estados (Normalizamos a mayúsculas por si acaso)\n  const status = (order.status || '').toUpperCase();\n  if (status === \"PENDING\") metrics.pendingCount++;\n  else if (status === \"PROCESSING\") metrics.processingCount++;\n  else if (status === \"COMPLETED\") metrics.completedCount++;\n  else if (status === \"CANCELLED\" || status === \"CANCELED\") metrics.canceledCount++;\n\n  // Analizar ítems\n  if (order.orderItems && Array.isArray(order.orderItems)) {\n    for (const item of order.orderItems) {\n      const food = item.foodName;\n      if (food) {\n        foodFrequency[food] = (foodFrequency[food] || 0) + 1;\n      }\n    }\n  }\n}\n\n// 5. Encontrar el plato más vendido\nlet mostRepeatedFood = \"N/A\";\nlet maxCount = 0;\nfor (const [food, count] of Object.entries(foodFrequency)) {\n  if (count > maxCount) {\n    maxCount = count;\n    mostRepeatedFood = food;\n  }\n}\n\n// 6. Formatear moneda para el reporte\nconst formattedAmount = new Intl.NumberFormat('es-ES', {\n  style: 'currency',\n  currency: 'USD'\n}).format(metrics.totalAmount);\n\n// 7. Retorno final\nreturn [{\n  json: {\n    ...metrics,\n    totalAmount: formattedAmount, // Enviamos el string bonito para el email\n    mostRepeatedFood\n  }\n}];"
+        "options": {
+          "delimiter": ",",
+          "fileName": "=reporte_errores_{{$now.format('yyyy-MM-dd')}}.csv",
+          "headerRow": true
+        }
       },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
       "position": [
-        -1232,
-        -16
+        992,
+        -704
       ],
-      "id": "bbdd200a-7561-4086-990c-5f178e5dad39",
-      "name": "Formatear para Gráfico"
+      "id": "faf602a5-7c09-4b70-95b9-243967a4c72d",
+      "name": "Convert_to_file"
+    },
+    {
+      "parameters": {
+        "sendTo": "{{EMAIL_DESTINO}}",
+        "subject": "Imagen generada del análisis de datos",
+        "message": "=<div style=\"font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f3f4f6; padding: 24px;\">\n  <div style=\"max-width: 650px; margin: 0 auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);\">\n    \n    <div style=\"background-color: #2563eb; padding: 20px 24px; display: flex; justify-content: space-between; align-items: center;\">\n      <div>\n        <h2 style=\"margin: 0; color: #ffffff; font-size: 20px; font-weight: 600;\">\n          Reporte Diario de Ventas\n        </h2>\n        <p style=\"margin: 4px 0 0 0; color: #bfdbfe; font-size: 13px; font-weight: 400;\">\n          Correspondiente al: {{ $now.toFormat('dd/MM/yyyy HH:mm:ss') }}\n\n        </p>\n      </div>\n    </div>\n\n    <div style=\"padding: 24px;\">\n      <p style=\"font-size: 14px; color: #4b5563; margin-bottom: 20px;\">\n        Resumen ejecutivo de actividad comercial. Datos procesados desde el sistema central de órdenes.\n      </p>\n\n      <table style=\"width: 100%; border-collapse: collapse; font-size: 14px;\">\n        <thead>\n          <tr>\n            <th style=\"text-align: left; padding: 12px; border-bottom: 2px solid #e5e7eb; background-color: #f8fafc; color: #1f2937; font-weight: 600;\">Métrica</th>\n            <th style=\"text-align: right; padding: 12px; border-bottom: 2px solid #e5e7eb; background-color: #f8fafc; color: #1f2937; font-weight: 600;\">Valor</th>\n          </tr>\n        </thead>\n        <tbody>\n          <tr>\n            <td style=\"padding: 10px 12px; border-bottom: 1px solid #f3f4f6;\">Órdenes pendientes</td>\n            <td style=\"padding: 10px 12px; border-bottom: 1px solid #f3f4f6; text-align: right;\"><strong> {{ $('Formatear_datos_a_grafico').item.json.pendingCount }}</strong></td>\n          </tr>\n          <tr>\n            <td style=\"padding: 10px 12px; border-bottom: 1px solid #f3f4f6;\">Órdenes procesadas</td>\n            <td style=\"padding: 10px 12px; border-bottom: 1px solid #f3f4f6; text-align: right;\"><strong>{{ $('Formatear_datos_a_grafico').item.json.processingCount }} </strong></td>\n          </tr>\n          <tr>\n            <td style=\"padding: 10px 12px; border-bottom: 1px solid #f3f4f6;\">Órdenes completadas</td>\n            <td style=\"padding: 10px 12px; border-bottom: 1px solid #f3f4f6; text-align: right; color: #059669;\"><strong>{{ $('Formatear_datos_a_grafico').item.json.completedCount }} </strong></td>\n          </tr>\n          <tr>\n            <td style=\"padding: 10px 12px; border-bottom: 2px solid #e5e7eb;\">Órdenes canceladas</td>\n            <td style=\"padding: 10px 12px; border-bottom: 2px solid #e5e7eb; text-align: right; color: #dc2626;\"><strong>{{ $('Formatear_datos_a_grafico').item.json.canceledCount }} </strong></td>\n          </tr>\n          <tr style=\"background-color: #f9fafb;\">\n            <td style=\"padding: 12px; font-weight: 700;\">Monto total de ventas</td>\n            <td style=\"padding: 12px; text-align: right; font-weight: 700; color: #2563eb; font-size: 16px;\">\n              {{ $('Formatear_datos_a_grafico').item.json.totalAmount }} \n            </td>\n          </tr>\n        </tbody>\n      </table>\n    </div>\n\n    <div style=\"background-color: #f9fafb; padding: 16px; text-align: center; font-size: 11px; color: #9ca3af; border-top: 1px solid #f3f4f6;\">\n      Este mensaje fue generado automáticamente por el sistema de automatización. No responda a este correo.\n    </div>\n  </div>\n</div>",
+        "options": {
+          "appendAttribution": false,
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              {}
+            ]
+          },
+          "senderName": "Sistema Automatizado"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1424,
+        -944
+      ],
+      "id": "615fd9cb-b171-4d8e-b4dc-fcf72c8636c5",
+      "name": "Envia_reporte_final",
+      "webhookId": "83b3162f-49b1-4f7d-9ca2-a02e60d6b1d4",
+      "credentials": {
+        "gmailOAuth2": "{{CREDENCIAL_GMAIL}}"
+      }
     },
     {
       "parameters": {
@@ -314,11 +374,34 @@
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.3,
       "position": [
-        -2096,
-        208
+        -352,
+        -608
       ],
-      "id": "cb347f3d-411f-4330-9c4e-e8d9ce1f4523",
+      "id": "723f4a42-7a0c-47b3-994c-21de85f09fd1",
       "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "sendTo": "{{EMAIL_DESTINO}}",
+        "subject": "Error de conexión con API — Acción requerida",
+        "message": "=<!-- Email template para n8n -->\n<div style=\"font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; color:#374151; line-height:1.45; max-width:680px; margin:0 auto; padding:20px;\">\n  \n\n  <div role=\"status\" aria-live=\"polite\" style=\"background:#f8fafc; border:1px solid #e6eef8; padding:14px; border-radius:8px; margin:12px 0;\">\n<p style=\"margin:0 0 12px 0; color:#111827; font-weight:700; font-size:18px;\">\n    Asunto: Error de conexión con API — Acción requerida\n  </p>\n\n  <p style=\"margin:0 0 12px 0;\">\n    Estimado equipo,\n  </p>\n\n  <p style=\"margin:0 0 12px 0;\">\n    El flujo automatizado en <strong>n8n</strong> ha fallado al intentar recuperar datos desde la API. Como resultado, la operación no pudo completarse y los datos no fueron obtenidos.\n  </p>\n    <strong style=\"display:block; margin-bottom:8px; color:#0f172a;\">Detalles técnicos</strong>\n\n    <div style=\"font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, 'Roboto Mono', monospace; font-size:13px; color:#0b1220;\">\n\n      <div style=\"margin-bottom:6px;\">\n        <span style=\"color:#111827;\">Código:</span>\n        <strong>{{ $json.error.code }}</strong>\n      </div>\n\n      <div style=\"margin-bottom:8px;\">\n        <span style=\"color:#111827;\">Mensaje:</span>\n        <span>{{ $json.error.message }} \n      </div>\n\n      <div aria-label=\"Stack trace\" style=\"margin-top:6px;\">\n\n  <p style=\"margin:0 0 8px 0; font-weight:600; color:#111827;\">Workflow:</p>\n  <ul style=\"margin:0 0 16px 20px; padding:0; color:#374151;\">\n    <li><strong>ID:</strong> <span style=\"font-family:ui-monospace, monospace;\">{{ $workflow.id }}</span></li>\n<li><strong>Nombre:</strong> <span style=\"font-family:ui-monospace, monospace;\">{{ $workflow.name }}</span></li>\n    <li><strong>Entorno:</strong> {{ $execution.mode.toUpperCase() }}</li>\n    <li><strong>Hora detectada:</strong> {{ $now }}</li>\n  </ul>\n\n  <p style=\"margin-top:18px; color:#6b7280; font-size:13px;\">\n    Este mensaje fue generado automáticamente por el sistema de automatización. No responda a este correo.\n  </p>\n</div>\n",
+        "options": {
+          "appendAttribution": false,
+          "senderName": "Sistema Automatizado"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        400,
+        -496
+      ],
+      "id": "b5273300-3b1f-4051-873b-2c169c26774d",
+      "name": "Enviar_reporte_de_error",
+      "webhookId": "ec830b58-9091-4929-88d5-47a7f0654bab",
+      "credentials": {
+        "gmailOAuth2": "{{CREDENCIAL_GMAIL}}"
+      }
     }
   ],
   "pinData": {},
@@ -327,43 +410,21 @@
       "main": [
         [
           {
-            "node": "Validación de datos",
+            "node": "Validar_datos",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Notificar no existen ordenes o fallo en API Graficar datos",
+            "node": "Notificar_inexistencia_ordenes_o_fallo_en_api_graficar_datos",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Enviar reporte de error",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Graficar datos": {
-      "main": [
-        [
-          {
-            "node": "If",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Validación de datos": {
-      "main": [
-        [
-          {
-            "node": "Formatear para Gráfico",
+            "node": "Enviar_reporte_de_error",
             "type": "main",
             "index": 0
           }
@@ -374,21 +435,21 @@
       "main": [
         [
           {
-            "node": "Envia reporte final",
+            "node": "Envia_reporte_final",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Notificar no existen ordenes o fallo en API Graficar datos",
+            "node": "Notificar_inexistencia_ordenes_o_fallo_en_api_graficar_datos",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Get Ordenes": {
+    "Obtener_ordenes": {
       "main": [
         [
           {
@@ -399,11 +460,78 @@
         ]
       ]
     },
-    "Formatear para Gráfico": {
+    "Validar_datos": {
       "main": [
         [
           {
-            "node": "Graficar datos",
+            "node": "Estan_validados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Estan_validados": {
+      "main": [
+        [
+          {
+            "node": "Formatear_datos_a_grafico",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Formatear_errores_validacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatear_datos_a_grafico": {
+      "main": [
+        [
+          {
+            "node": "Generar_grafico",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatear_errores_validacion": {
+      "main": [
+        [
+          {
+            "node": "Convert_to_file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generar_grafico": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notificar_inexistencia_ordenes_o_fallo_en_api_graficar_datos": {
+      "main": [
+        []
+      ]
+    },
+    "Convert_to_file": {
+      "main": [
+        [
+          {
+            "node": "Envio_fichero_csv",
             "type": "main",
             "index": 0
           }
@@ -414,22 +542,30 @@
       "main": [
         [
           {
-            "node": "Get Ordenes",
+            "node": "Obtener_ordenes",
             "type": "main",
             "index": 0
           }
         ]
       ]
+    },
+    "Enviar_reporte_de_error": {
+      "main": [
+        []
+      ]
     }
   },
   "active": false,
   "settings": {
-    "executionOrder": "v1"
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
   },
-  "versionId": "48dde270-300a-4322-ab00-b2f4f2d279ae",
+  "versionId": "149c83e6-3ad4-49a1-92fd-cac60e19b556",
   "meta": {
+    "templateCredsSetupCompleted": true,
     "instanceId": "c28904283476f2207c69db69f58f0db805c455898fde90907e8051fa0a4dd3c0"
   },
-  "id": "SKuo1qYRmd3zeLnk",
+  "id": "MFnibfHMt1APq1j8",
   "tags": []
 }

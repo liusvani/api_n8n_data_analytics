@@ -83,6 +83,30 @@ graph TD
     G --> I[Notificar no existen ordenes o fallo en API]
     C --> J[Enviar reporte de error]
 ```
+```mermaid
+flowchart TD
+    A[Manual Trigger] --> B[Get Ordenes]
+    B --> C[Switch]
+    
+    %% Switch outputs
+    C -->|Datos listos| D[Validación de datos]
+    C -->|No existen ordenes| E[Notificar no existen ordenes o fallo en API Graficar datos]
+    C -->|Error de conexión API| F[Enviar reporte de error]
+
+    %% Validación de datos
+    D --> G[Datos validados]
+    G -->|true| H[Formatear para Gráfico]
+    G -->|false| I[Captar y transformar errores de validación]
+
+    %% Flujo de datos validados
+    H --> J[Graficar datos]
+    J --> K{If}
+    K -->|OK| L[Envia reporte final]
+    K -->|Error| E
+
+    %% Flujo de errores
+    I --> M[Convert to File]
+    M --> N[Send a message]
 
 ##  Funcionalidades Principales
 
@@ -98,7 +122,7 @@ graph TD
   - Protocolos de alerta ante errores de conectividad o respuestas nulas de la API.
 
 ---
-
+```
 ##  Configuración de Parámetros (Placeholders)
 
 | Parámetro | Definición Técnica | Ejemplo de Referencia |

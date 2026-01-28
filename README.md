@@ -72,10 +72,11 @@ Antes de ejecutar el workflow, reemplaza los siguientes valores:
 
 ##  Flujo de la automatización
 
-```mermaid
 
+
+```mermaid
 flowchart TD
-    A[Manual Trigger] --> B[Obtener_ordenes]
+    A[Schedule Trigger] --> B[Obtener_ordenes]
     B --> C[Switch]
 
     %% Switch outputs
@@ -115,11 +116,11 @@ flowchart TD
 ---
 ##  Configuración de Parámetros (Placeholders)
 
-| Parámetro | Definición Técnica | Ejemplo de Referencia |
-| :--- | :--- | :--- |
-| `{{API_ENDPOINT_ORDERS}}` | URL base del servicio de datos | `https://api.empresa.com/v1/orders` |
-| `{{EMAIL_DESTINO}}` | Destinatario final del reporte ejecutivo | `analytics@empresa.com` |
-| `{{CREDENCIAL_GMAIL}}` | Identificador de credencial encriptada en n8n | `Gmail_Auth_Production` |
+| Parámetro                 | Definición Técnica                            | Ejemplo de Referencia               |
+| ------------------------- | --------------------------------------------- | ----------------------------------- |
+| `{{API_ENDPOINT_ORDERS}}` | URL base del servicio de datos                | `https://api.empresa.com/v1/orders` |
+| `{{EMAIL_DESTINO}}`       | Destinatario final del reporte ejecutivo      | `analytics@empresa.com`             |
+| `{{CREDENCIAL_GMAIL}}`    | Identificador de credencial encriptada en n8n | `Gmail_Auth_Production`             |
 
 ---
 
